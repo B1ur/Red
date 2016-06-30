@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<style type="text/css">
+	*{margin: 0;padding: 0; -webkit-font-smoothing: antialiased;}
+	#container{position: relative; width:100%;height: 100%;}
+    #in{position: absolute; width: 550px;height: 66px;border: 1px solid #ddd;margin-left: 30%;top: 130px;float: left;}
+    img{float:left; margin: 12.5px 5px;}
+    .txt{float: left; margin:20px; height: 26px;width: 440px; line-height: 24px;font-size: 24px; outline: none;border: 0;}
+    .txt::-webkit-input-placeholder{font-style: italic;}
+    #list ul li .close::before{content: "\00D7";}
+    #list ul li .close.close1::before{content: "\2716";}
+    #list{position: absolute;width: 550px;border: 1px solid #ddd;margin-left: 30%;top: 198px;}
+    #list ul li{position: relative; border: 1px solid #ddd;width: 100%; list-style: none;height: 66px; }
+    .close{position: absolute; right: 30px; margin-top: 26px; display: none;}
+    #list ul li p{position: absolute;line-height: 66px;font-size: 24px;
+    	margin-left: 62px;max-width: 440px;word-break: break-all;white-space: pre-line}
+    #footer{width: 100%;height: 50px;position: relative;display: none;}
+    #footer *{display: inline;margin-top:13px;color: #777;}
+    #footer p{position:absolute; font-size: 16px;float: left;margin-left: 20px;}
+    #footer input{border: 1px solid transparent;border-radius: 3px;}
+    #all{position:absolute;float: left;background-color: #fff;padding: 3px 7px;margin-left: 190px;outline-color: rgba(175,47,47,0.2); }
+    #active{position:absolute;float: left;background-color: #fff;padding: 3px 7px;margin-left: 230px; outline-color: rgba(175,47,47,0.2);}
+    #completed{position:absolute;float: left;background-color: #fff;padding: 3px 7px; margin-left: 290px;outline-color: rgba(175,47,47,0.2);}
+    #clear{display: none; position:absolute;float: left;background-color: #fff;padding: 3px 7px;margin-left: 460px;outline-color: rgba(175,47,47,0.2);}
+    #footer input:hover{border: 1px solid rgba(175,47,47,0.1);cursor: pointer;}
+</style>
+<body>
+	<div id="container">
+	<div id="in">
+	    <div class="img"><img src="向下.png"></div>
+		<input class="txt" type="text" placeholder="What needs to be done?">
+	</div>
+	<div id="list">
+		<ul>
+		</ul>
+        <div id="footer">
+            <p></p>
+            <input type="button" id="all" value="All" />
+            <input type="button" id="active" value="Active" />
+            <input type="button" id="completed" value="Completed" />
+            <input type="button" id="clear" value="Clear" />
+        </div>
+	</div>
+	</div>
+	
+<script src="jquery-2.1.1.js"></script>
+<script>
+    var imgNum = 0;
+    var liNum = 0;
+    var text = $('.txt');
+    var list = $('#list');
+    var divin = $('#in');
+    var footer = $('#footer');
+	$(document).ready(function() {
+        text.keyup(function (e) {
+            if (e.keyCode == 13) {
+                var value = text.val();
+                if (value != '') {
+                    list.find('ul').append('<li><img class="img" src="未选.png"><p></p><span class="close"></span></li>');
+                    list.find('ul li p:last').text(value);
+                    footer.css('display','block');
+                    text.val('');
+                    liNum = 0;
+                    imgNum = 0;
+                    changeHtml();
+                }
+            }
+        });
+        list.find('ul').on({
+            mouseover: function () {
+                $(this).find('.close').show();
+            },
+            mouseout: function () {
+                $(this).find('.close').hide();
+            }
+        }, 'li');
+        list.find('ul').on('mouseover mouseout', 'li .close', function () {
+            $(this).toggleClass('close1');
+        });
+        list.find('ul').on('click', 'li .close', function () {
+            $(this).parent().remove();
+            liNum = 0;
+            imgNum = 0;
+            changeHtml();
+        });
+        list.find('ul').on('click', 'li img', function () {
+            var imgVal = $(this).attr('src');
+            if (imgVal == '未选.png') {
+                $(this).attr('src', '选定.png');
+                $(this).next().css({'text-decoration': 'line-through', 'color': '#d9d9d9'});
+            } else {
+                $(this).attr('src', '未选.png');
+                $(this).next().css({'text-decoration': 'none', 'color': 'black'});
+            }
+            liNum = 0;
+            imgNum = 0;
+            changeHtml();
+        });
+        divin.find('img').click(function () {
+            var imgVal = [];
+            list.find('ul li .img').each(function () {
+                imgVal.push($(this).attr("src"));
+            });
+            if ($.inArray('未选.png',imgVal)>=0){
+                list.find('ul li .img').attr('src', '选定.png');
+                list.find('ul li p').css({'text-decoration': 'line-through', 'color': '#d9d9d9'});
+            } else {
+                list.find('ul li .img').attr('src', '未选.png');
+                list.find('ul li p').css({'text-decoration': 'none', 'color': 'black'});
+            }
+            liNum = 0;
+            imgNum = 0;
+            changeHtml();
+        });
+        changeHtml();
+        $('#all').click(function(){
+           allClick();
+        });
+        $('#active').click(function(){
+            activeClick();
+        });
+        $('#completed').click(function(){
+            completedClick();
+        });
+        $('#clear').click(function(){
+            clearClick();
+        });
+    });
+    function changeHtml(){
+        list.find('ul li .img').each(function(){
+            liNum++;
+            if($(this).attr('src')=='未选.png'){
+                imgNum++;
+            }
+        });
+        if(imgNum==0 && liNum!=0){footer.find('p').text(imgNum + '  item left');}
+        else if(imgNum==0 && liNum==0){footer.css('display','none');}
+        else if(imgNum==1){
+            footer.find('p').text('1  item left');
+        }else {footer.find('p').text(imgNum +'  items left');}
+        if(liNum>imgNum){$('#clear').show();}
+        else if(liNum=imgNum){$('#clear').hide();}
+    }
+    function allClick(){
+        list.find('ul li').each(function(){
+           $(this).show();
+        });
+    }
+    function activeClick(){
+        list.find('ul li .img').each(function(){
+           if($(this).attr('src')=='选定.png') {
+               $(this).parent().hide();
+           }else{$(this).parent().show();}
+        });
+    }
+    function completedClick(){
+        list.find('ul li .img').each(function(){
+           if($(this).attr('src')=='未选.png'){
+               $(this).parent().hide();
+           }else{$(this).parent().show();}
+        });
+    }
+    function clearClick(){
+        list.find('ul li .img').each(function(){
+            if($(this).attr('src')=='选定.png'){
+                $(this).parent().remove();
+            }
+        });
+        imgNum=0;
+        liNum=0;
+        changeHtml();
+    }
+</script>
+</body>
+</html>
